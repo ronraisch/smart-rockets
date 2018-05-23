@@ -1,150 +1,96 @@
 //should be more generalized for all sizes nn
 class NeuralNet {
 
-  int iNodes;//No. of input nodes
-  int h1Nodes;//No. of hidden nodes (first layer)
-  int h2Nodes;//No. of hidden nodes (second layer)
-  int oNodes;//No. of output nodes
+  int[] sizes;//No. of hidden nodes 
 
-  Matrix whi;//matrix containing weights between the input nodes and the hidden nodes
-  Matrix whh;//matrix containing weights between the hidden nodes and the second layer hidden nodes
-  Matrix woh;//matrix containing weights between the second hidden layer nodes and the output nodes
+  Matrix[] matrices;//matrix containing weights between the input nodes and the hidden nodes
 //---------------------------------------------------------------------------------------------------------------------------------------------------------  
 
   //constructor
-  NeuralNet(int inputs, int hiddenNo1,int hiddenNo2, int outputNo) {
+  NeuralNet(int[] sizes) {
 
     //set dimensions from parameters
-    iNodes = inputs;
-    oNodes = outputNo;
-    h1Nodes = hiddenNo1;
-    h2Nodes = hiddenNo2;
-
-
-    //create first layer weights 
+    this.sizes=sizes.clone();
+    matrices=new Matrix[sizes.length-1];
+    //create layers 
     //included bias weight
-    whi = new Matrix(h1Nodes, iNodes +1);
-
-    //create second layer weights
-    //include bias weight
-    whh = new Matrix(h2Nodes, h1Nodes +1);
-
-    //create second layer weights
-    //include bias weight
-    woh = new Matrix(oNodes, h2Nodes +1);  
-
-    //set the matricies to random values
-    whi.randomize(minValue,maxValue);
-    whh.randomize(minValue,maxValue);
-    woh.randomize(minValue,maxValue);
+    for (int i=0;i<matrices.length;i++){
+      matrices[i]=new Matrix(sizes[i+1],sizes[i]+1);
+      matrices[i].randomize(minValue,maxValue);
+    }
   }
 //---------------------------------------------------------------------------------------------------------------------------------------------------------  
 
   //mutation function for genetic algorithm
   void mutate(float mr) {
     //mutates each weight matrix
-    whi.mutate(mr);
-    whh.mutate(mr);
-    woh.mutate(mr);
+    for (Matrix m:matrices){
+      m.mutate(mr);
+    }
   }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------  
   //calculate the output values by feeding forward through the neural network
   float[] output(float[] inputsArr) {
-
-    //convert array to matrix
-    //Note woh has nothing to do with it its just a function in the Matrix class
-    Matrix inputs = woh.singleColumnMatrixFromArray(inputsArr);
-
-    //add bias 
-    Matrix inputsBias = inputs.addBias();
-
-
-    //-----------------------calculate the guessed output
-
-    //apply layer one weights to the inputs
-    Matrix hiddenInputs = whi.dot(inputsBias);
-
-    //pass through activation function(sigmoid)
-    Matrix hiddenOutputs = hiddenInputs.activate();
-
-    //add bias
-    Matrix hiddenOutputsBias = hiddenOutputs.addBias();
-
-    //apply layer two weights
-    Matrix hiddenInputs2 = whh.dot(hiddenOutputsBias);
-    Matrix hiddenOutputs2 = hiddenInputs2.activate();
-    Matrix hiddenOutputsBias2 = hiddenOutputs2.addBias();
-
-    //apply level three weights
-    Matrix outputInputs = woh.dot(hiddenOutputsBias2);
-    //pass through activation function(sigmoid)
-    Matrix outputs = outputInputs.activate();
-
-    //convert to an array and return
-    return outputs.toArray();
+    Matrix input = matrices[0].singleColumnMatrixFromArray(inputsArr);
+    for (int i=0;i<matrices.length;i++){
+       input=input.addBias();
+       input=matrices[i].dot(input);
+       input=input.activate();
+    }
+    
+    return input.toArray();
   }
 //---------------------------------------------------------------------------------------------------------------------------------------------------------  
   //crossover function for genetic algorithm
   NeuralNet crossOver(NeuralNet partner) {
 
     //creates a new child with layer matrices from both parents
-    NeuralNet child = new NeuralNet(iNodes, h1Nodes,h1Nodes, oNodes);
-    child.whi = whi.crossOver(partner.whi);
-    child.whh = whh.crossOver(partner.whh);
-    child.woh = woh.crossOver(partner.woh);
+    NeuralNet child = new NeuralNet(sizes);
+    for (int i=0;i<matrices.length;i++){
+      child.matrices[i]=matrices[i].crossOver(partner.matrices[i]);
+    }
     return child;
   }
 //---------------------------------------------------------------------------------------------------------------------------------------------------------  
   //return a neural net which is a clone of this Neural net
   NeuralNet clone() {
-    NeuralNet clone  = new NeuralNet(iNodes, h1Nodes,h2Nodes, oNodes); 
-    clone.whi = whi.clone();
-    clone.whh = whh.clone();
-    clone.woh = woh.clone();
+    NeuralNet clone  = new NeuralNet(sizes); 
+    for (int i=0;i<matrices.length;i++){
+      clone.matrices[i]=matrices[i].clone();
+    }
     return clone;
   }
 //---------------------------------------------------------------------------------------------------------------------------------------------------------  
   //converts the weights matrices to a single table 
   //used for storing the snakes brain in a file
+  int biggestMatrix(){
+    int biggest=0;
+    for (Matrix m:matrices){
+      int size=m.rows*m.cols;
+      biggest=max(biggest,size);
+    }
+    return biggest;
+  }
   Table NetToTable() {
-
     //create table
     Table t = new Table();
-
-
+    int biggestSize=biggestMatrix();
+    float[][] Arrays=new float[matrices.length][biggestSize];
     //convert the matricies to an array 
-    float[] whiArr = whi.toArray();
-    float[] whhArr = whh.toArray();
-    float[] wohArr = woh.toArray();
-
+    for (int i=0;i<matrices.length;i++){
+      Arrays[i]=matrices[i].toArray();
+    }
     //set the amount of columns in the table
-    for (int i = 0; i< max(whiArr.length, whhArr.length, wohArr.length); i++) {
+    for (int i = 0; i< biggestSize; i++) {
       t.addColumn();
     }
-
-    //set the first row as whi
-    TableRow tr = t.addRow();
-
-    for (int i = 0; i< whiArr.length; i++) {
-      tr.setFloat(i, whiArr[i]);
+    for (int i=0;i<matrices.length;i++){
+      TableRow tr=t.addRow();
+      for (int j=0;j<Arrays[i].length;j++){
+        tr.setFloat(j,Arrays[i][j]);
+      }
     }
-
-
-    //set the second row as whh
-    tr = t.addRow();
-
-    for (int i = 0; i< whhArr.length; i++) {
-      tr.setFloat(i, whhArr[i]);
-    }
-
-    //set the third row as woh
-    tr = t.addRow();
-
-    for (int i = 0; i< wohArr.length; i++) {
-      tr.setFloat(i, wohArr[i]);
-    }
-
     //return table
     return t;
   }
@@ -153,39 +99,23 @@ class NeuralNet {
   //takes in table as parameter and overwrites the matrices data for this neural network
   //used to load snakes from file
   void TableToNet(Table t) {
-
+    ArrayList<ArrayList<Float>> Arrays=new ArrayList<ArrayList<Float>>();
     //create arrays to tempurarily store the data for each matrix
-    float[] whiArr = new float[whi.rows * whi.cols];
-    float[] whhArr = new float[whh.rows * whh.cols];
-    float[] wohArr = new float[woh.rows * woh.cols];
-
-    //set the whi array as the first row of the table
-    TableRow tr = t.getRow(0);
-
-    for (int i = 0; i< whiArr.length; i++) {
-      whiArr[i] = tr.getFloat(i);
+    for (int i=0;i<matrices.length;i++){
+      TableRow tr=t.getRow(i);
+      ArrayList<Float> tmp=new ArrayList<Float>();
+      for (int j=0;j<matrices[i].rows*matrices[i].cols;j++){
+        tmp.set(j,tr.getFloat(j));
+      }
+      Arrays.set(i,tmp);
     }
-
-
-    //set the whh array as the second row of the table
-    tr = t.getRow(1);
-
-    for (int i = 0; i< whhArr.length; i++) {
-      whhArr[i] = tr.getFloat(i);
-    }
-
-    //set the woh array as the third row of the table
-
-    tr = t.getRow(2);
-
-    for (int i = 0; i< wohArr.length; i++) {
-      wohArr[i] = tr.getFloat(i);
-    }
-
-
     //convert the arrays to matrices and set them as the layer matrices 
-    whi.fromArray(whiArr);
-    whh.fromArray(whhArr);
-    woh.fromArray(wohArr);
+    for (int i=0;i<matrices.length;i++){
+      float[] array=new float[Arrays.get(i).size()];
+      for (int j=0;j<array.length;j++){
+        array[j]=Arrays.get(i).get(j);
+      }
+      matrices[i].fromArray(array);
+    }
   }
 }
