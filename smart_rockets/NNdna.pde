@@ -9,8 +9,8 @@ class NNdna{
   void mutate(float mr){
     genes.mutate(mr);
   }
-  NNdna crossOver(NNdna partner){
-    return new NNdna(genes.crossOver(partner.genes));
+  NNdna crossOver(NNdna partner,float chance){
+    return new NNdna(genes.crossOver(partner.genes,chance));
   }
   NNdna clone(){
     return new NNdna(genes);
