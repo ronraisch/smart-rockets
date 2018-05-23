@@ -1,7 +1,7 @@
 class NNdna{
   NeuralNet genes;
-  NNdna(int IN,int HN,int ON){
-    genes=new NeuralNet(IN,HN,ON);
+  NNdna(int[] sizes){
+    genes=new NeuralNet(sizes);
   }
   NNdna(NeuralNet genes){
     this.genes=genes.clone();
