@@ -43,12 +43,12 @@ class NeuralNet {
   }
 //---------------------------------------------------------------------------------------------------------------------------------------------------------  
   //crossover function for genetic algorithm
-  NeuralNet crossOver(NeuralNet partner) {
+  NeuralNet crossOver(NeuralNet partner,float chance) {
 
     //creates a new child with layer matrices from both parents
     NeuralNet child = new NeuralNet(sizes);
     for (int i=0;i<matrices.length;i++){
-      child.matrices[i]=matrices[i].crossOver(partner.matrices[i]);
+      child.matrices[i]=matrices[i].crossOver(partner.matrices[i],chance);
     }
     return child;
   }
