@@ -131,7 +131,7 @@ class NNPopulation {
         NNRocket parentB=pickOne();
         //breed them: crossover and mutation
         NNRocket child=new NNRocket();
-        NNdna childna=parentA.dna.crossOver(parentB.dna);
+        NNdna childna=parentA.dna.crossOver(parentB.dna,parentA.fitness/(parentA.fitness+parentB.fitness));
         //NNdna childna=parentA.dna.clone();
         childna.mutate(mutationRate);
         child.dna=childna.clone();
