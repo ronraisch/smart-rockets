@@ -34,6 +34,8 @@ void showTarget() {
 }
 void buttonStuff(){
   showBest.show();
+  savePop.show();
+  moveTarget.show();
   if (showBest.actuallyClicked){
     showBestRocket=!showBestRocket;
     if (showBest.txt=="show best"){
@@ -42,6 +44,16 @@ void buttonStuff(){
     else{
       showBest.txt="show best";
     }
+  }
+  if (savePop.actuallyClicked && keyPressed){
+    NNpopulation.savePop();
+  }
+  if (moveTarget.actuallyClicked){
+    movingTarget=true;
+  }
+  if (movingTarget){
+    targetX=mouseX;
+    targetY=mouseY;
   }
 }
 void popStuff(){
