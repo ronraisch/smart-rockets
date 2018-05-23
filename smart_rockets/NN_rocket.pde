@@ -26,7 +26,7 @@ class NNRocket{
     }
   }
   NNRocket(){
-    dna=new NNdna(inputN,hiddenN,outputN);
+    dna=new NNdna(inputN,hidden1N,hidden2N,outputN);
     pos=new PVector(width/2,height-2);
     acc=new PVector(0,0);
     vel=new PVector(0,-0.01);
@@ -43,19 +43,27 @@ class NNRocket{
       input[i]=sqrt(sensors[i].calcDist()/maxDist);
     }
     //adding more inputs
-    input[numOfSensors]=pos.x/width;
-    input[numOfSensors+1]=pos.y/height;
-    input[numOfSensors+2]=vel.mag()/maxVel;
-    input[numOfSensors+3]=vel.heading()/PI;
+    //input[numOfSensors]=pos.x/width;
+    //input[numOfSensors+1]=pos.y/height;
+    input[numOfSensors]=vel.mag()/maxVel;
+    input[numOfSensors+1]=vel.heading()/PI;
     //input[numOfSensors+6]=targetX/width;
     //input[numOfSensors+7]=targetY/height;
     PVector direction=PVector.sub(new PVector(targetX,targetY),pos);
-    input[numOfSensors+4]=direction.heading()/PI;
-    input[numOfSensors+5]=sqrt(direction.magSq()/maxDist);
+    input[numOfSensors+2]=direction.heading()/PI;
+    input[numOfSensors+3]=sqrt(direction.magSq()/maxDist);
     //calculating output
     float[] output=dna.genes.output(input);
-    PVector force=new PVector(output[0]*forceMag/activationFunction(1),output[1]*angleRange/activationFunction(1));
-    return pol2cart(force);
+    PVector force=new PVector(output[0]*forceMag/activationFunction(maxValue),output[1]*angleRange/activationFunction(maxValue));
+    force=pol2cart(force);
+    force.add(calcFriction());
+    return force;
+  }
+  PVector calcFriction(){
+    PVector fric=new PVector(1,0);
+    fric.rotate(vel.heading()+PI);
+    fric.mult(mu*weight);
+    return fric;
   }
   void update(){
     if (!crashed && !hit){
