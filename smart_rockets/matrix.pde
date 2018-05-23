@@ -243,7 +243,7 @@ class Matrix {
   }
 //---------------------------------------------------------------------------------------------------------------------------------------------------------  
   //returns a matrix which has a random number of values from this matrix and the rest from the parameter matrix
-  Matrix crossOver(Matrix partner) {
+  Matrix crossOver(Matrix partner,float chance) {
     Matrix child = new Matrix(rows, cols);
     
     ////pick a random point in the matrix
@@ -257,8 +257,8 @@ class Matrix {
         //} else { //if after the random point then copy from the parameter array
         //  child.matrix[i][j] = partner.matrix[i][j];
         //}
-        //maybe instead of 0.5 should be related to fitness value
-        if (random(1)<0.5){
+        //maybe instead of 0.5 should be related to fitness value(it is now)
+        if (random(1)<chance){
           child.matrix[i][j]=matrix[i][j];
         }
         else{
