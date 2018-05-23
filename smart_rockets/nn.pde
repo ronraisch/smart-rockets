@@ -1,7 +1,9 @@
+//should be more generalized for all sizes nn
 class NeuralNet {
 
   int iNodes;//No. of input nodes
-  int hNodes;//No. of hidden nodes
+  int h1Nodes;//No. of hidden nodes (first layer)
+  int h2Nodes;//No. of hidden nodes (second layer)
   int oNodes;//No. of output nodes
 
   Matrix whi;//matrix containing weights between the input nodes and the hidden nodes
@@ -10,25 +12,26 @@ class NeuralNet {
 //---------------------------------------------------------------------------------------------------------------------------------------------------------  
 
   //constructor
-  NeuralNet(int inputs, int hiddenNo, int outputNo) {
+  NeuralNet(int inputs, int hiddenNo1,int hiddenNo2, int outputNo) {
 
     //set dimensions from parameters
     iNodes = inputs;
     oNodes = outputNo;
-    hNodes = hiddenNo;
+    h1Nodes = hiddenNo1;
+    h2Nodes = hiddenNo2;
 
 
     //create first layer weights 
     //included bias weight
-    whi = new Matrix(hNodes, iNodes +1);
+    whi = new Matrix(h1Nodes, iNodes +1);
 
     //create second layer weights
     //include bias weight
-    whh = new Matrix(hNodes, hNodes +1);
+    whh = new Matrix(h2Nodes, h1Nodes +1);
 
     //create second layer weights
     //include bias weight
-    woh = new Matrix(oNodes, hNodes +1);  
+    woh = new Matrix(oNodes, h2Nodes +1);  
 
     //set the matricies to random values
     whi.randomize(minValue,maxValue);
@@ -86,7 +89,7 @@ class NeuralNet {
   NeuralNet crossOver(NeuralNet partner) {
 
     //creates a new child with layer matrices from both parents
-    NeuralNet child = new NeuralNet(iNodes, hNodes, oNodes);
+    NeuralNet child = new NeuralNet(iNodes, h1Nodes,h1Nodes, oNodes);
     child.whi = whi.crossOver(partner.whi);
     child.whh = whh.crossOver(partner.whh);
     child.woh = woh.crossOver(partner.woh);
@@ -95,7 +98,7 @@ class NeuralNet {
 //---------------------------------------------------------------------------------------------------------------------------------------------------------  
   //return a neural net which is a clone of this Neural net
   NeuralNet clone() {
-    NeuralNet clone  = new NeuralNet(iNodes, hNodes, oNodes); 
+    NeuralNet clone  = new NeuralNet(iNodes, h1Nodes,h2Nodes, oNodes); 
     clone.whi = whi.clone();
     clone.whh = whh.clone();
     clone.woh = woh.clone();
