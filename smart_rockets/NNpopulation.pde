@@ -68,11 +68,25 @@ class NNPopulation {
     count++;
     newGen();
   }
+  //saving population
+  void savePop(){
+    for (int i=0;i<nnRockets;i++){
+      saveTable(rockets[i].dna.genes.NetToTable(),"good_rockets/rocket_"+i,"html");
+      println("rocket "+i+" saved");
+    }
+  }
+  void loadPop(){
+    for (int i=0;i<nnRockets;i++){
+      NeuralNet tmp=new NeuralNet(inputN,hidden1N,hidden2N,outputN);
+      tmp.TableToNet(loadTable("good_rockets/rocket_"+i,"html"));
+      println("rocket_"+i+" loaded");
+      rockets[i].dna.genes=tmp.clone();
+    }
+  }
   //finding best rocket
   NNdna bestRocket() {
     float best=0;
     NNRocket bestR=new NNRocket();
-    prevDist=bestDist;
     for (int i=0; i<nnRockets; i++) {
       if (rockets[i].fitness>best) {
         best=rockets[i].fitness;
