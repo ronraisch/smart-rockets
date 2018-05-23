@@ -10,19 +10,16 @@ float forceMag=1;
 float angleRange=2*PI;
 float bestDist;
 float prevDist;
-float delta=40;
-float sensorPrecision=0.1;
+float delta=1;
+float sensorPrecision=0.01;
 float maxVel=10;
 int originalFPR=400;
 int framesPerRun=originalFPR;
 int numOfSensors=6;
-int inputN=4+numOfSensors;
-int outputN=2;
-int hidden1N=6;
-int hidden2N=6;
+int[] sizes={4+numOfSensors,6,6,2};
 int count=0;
-int weight=10;
-float mu=0.1;
+float mu=0;
+float weight=100;
 float targetX, targetY, targetR;
 ArrayList<Obstacle> obstacles;
 int nRockets=1000;
@@ -40,12 +37,12 @@ int generation=0;
 boolean movingTarget=false;
 boolean addObstacle=true;
 boolean showBestRocket=false;
-boolean anyHit=false, prevHit=false;
+boolean anyHit=false,prevHit=false;
 int bestTime=framesPerRun+1;
 Slider rateSlider;
 NNRocket r=new NNRocket();
-Button savePop;
 Button showBest;
+Button savePop;
 Button moveTarget;
 void setup() {
   size(800, 600);
@@ -55,10 +52,10 @@ void setup() {
   targetX=width/2;
   targetY=50;
   targetR=10;
+  showBest=new Button(20,height-70,54,16,"show best");
+  savePop=new Button(20,height-90,84,16,"save population");
   moveTarget=new Button(20,height-110,64,16,"move target");
-  savePop=new Button(20, height-90, 84, 16, "save population");
-  showBest=new Button(20, height-70, 54, 16, "show best");
-  rateSlider=new Slider(0, 30, 0, 100, 20, 20, height-50);
+  rateSlider=new Slider(0, 3, 0, 100, 20, 20, height-50);
   noStroke();
   population=new Population();
   NNpopulation=new NNPopulation();
@@ -72,43 +69,43 @@ void draw() {
   background(0);
   //r.pos.x=mouseX;
   //r.pos.y=mouseY;
-  ////r.vel.rotate(noise(frameCount)/100);
+  //r.vel.rotate(noise(frameCount)/100);
   //r.show();
-  //r.sensors[0].updateSensor(r.pos,r.vel.heading());
-  ////PVector direction=PVector.sub(new PVector(targetX,targetY),r.pos);
-  //println(sqrt(r.sensors[0].calcDist()));
+  //for (int i=0;i<numOfSensors;i++){
+  //  r.sensors[i].updateSensor(r.pos,r.vel.heading());
+  //  r.sensors[i].calcDist();
+  //}
+  //PVector direction=PVector.sub(new PVector(targetX,targetY),r.pos);
+  //println(direction.heading()/PI);
   showTarget();
   buttonStuff();
   NNpopStuff();
-  showObstacles();
   rateSlider.show();
+  showObstacles();
   texts();
-  //if (frameCount%4==0) {
-   // saveFrame("training/#####.tif");
-  //}
-  println(frameRate);
+  //println(frameRate);
 }
 void mousePressed() {
-  if (!rateSlider.clicked() && !showBest.clicked() && !savePop.clicked() && !movingTarget) {
+  if (movingTarget){
+    movingTarget=false;
+  }
+  if (!rateSlider.clicked() && !showBest.clicked()) {
     x=mouseX;
     y=mouseY;
     addObstacle=true;
   } else {
     addObstacle=false;
   }
-  if (movingTarget){
-    movingTarget=false;
-  }
 }
 void mouseReleased() {
-  if (addObstacle) {
+  if (addObstacle){
     framesPerRun=originalFPR;
     bestTime=framesPerRun+1;
     obstacles.add(new Obstacle(x, y, mouseX, mouseY));
   }
 }
 void mouseWheel(MouseEvent event) {
-  if (obstacles.size()>0) {
+  if (obstacles.size()>0){
     framesPerRun=originalFPR;
     bestTime=framesPerRun+1;
     obstacles.remove(obstacles.size()-1);
