@@ -40,6 +40,15 @@ class NNPopulation {
     count++;
     newGen();
   }
+  float calcSucces(){
+    float tmp=0;
+    for (int i=0;i<nnRockets;i++){
+      if (rockets[i].hit){
+        tmp++;
+      }
+    }
+    return 100*tmp/nnRockets;
+  }
   //reseting movement of currnt generation for retesting them
   void resetGen(){
     for (int i=0;i<nnRockets;i++){
@@ -77,7 +86,7 @@ class NNPopulation {
   }
   void loadPop(){
     for (int i=0;i<nnRockets;i++){
-      NeuralNet tmp=new NeuralNet(inputN,hidden1N,hidden2N,outputN);
+      NeuralNet tmp=new NeuralNet(sizes);
       tmp.TableToNet(loadTable("good_rockets/rocket_"+i,"html"));
       println("rocket_"+i+" loaded");
       rockets[i].dna.genes=tmp.clone();
@@ -97,11 +106,25 @@ class NNPopulation {
     //bestR.dna.genes.NetToTable().print();
     return bestR.dna;
   }
+  PVector calcCenter(){
+    PVector center=new PVector(0,0);
+    for (NNRocket r:rockets){
+      center.add(r.pos);
+    }
+    center.div((float)nnRockets);
+    return center;
+  }
   //managing the whole repopulation stuff
   void newGen() {
     //checks if population is dead
     checkPop();
     if (death) {
+      //centerOfMass=calcCenter();
+      centerOfMass();
+      succes=calcSucces();
+      if (training){
+        trainPopulation();
+      }
       //updating FPR and count
       framesPerRun=bestTime+60;
       count=0;
@@ -121,7 +144,7 @@ class NNPopulation {
       for (int i=1;i<nnRockets/4+1;i++){
         NNRocket parent=topRockets[i-1];
         NNdna childna=parent.dna.clone();
-        childna.mutate(mutationRate);
+        childna.mutate(NNmutationRate);
         newRockets[i]=new NNRocket(childna);
       }
       //crossover and mutation for the rest
@@ -133,7 +156,7 @@ class NNPopulation {
         NNRocket child=new NNRocket();
         NNdna childna=parentA.dna.crossOver(parentB.dna,parentA.fitness/(parentA.fitness+parentB.fitness));
         //NNdna childna=parentA.dna.clone();
-        childna.mutate(mutationRate);
+        childna.mutate(NNmutationRate);
         child.dna=childna.clone();
         //adding the child to the new rockets array
         newRockets[i]=child;
@@ -193,6 +216,13 @@ class NNPopulation {
         }
       }
     }
+  }
+  NNPopulation clone(){
+    NNPopulation tmp=new NNPopulation();
+    for (int i=0;i<nnRockets;i++){
+      tmp.rockets[i]=rockets[i].clone();
+    }
+    return tmp;
   }
   //updates death value of the population
   void checkPop() {
