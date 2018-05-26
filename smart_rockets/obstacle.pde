@@ -22,4 +22,7 @@ class Obstacle{
   boolean checkHit(PVector pos){
     return (pos.x>leftX && pos.x<rightX && pos.y>topY && pos.y<bottomY);
   }
+  void print(){
+    println("left x:"+leftX+" right x:"+rightX+" top y:"+topY+" bottom y:"+bottomY);
+  }
 }
