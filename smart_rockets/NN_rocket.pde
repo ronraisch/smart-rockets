@@ -105,6 +105,9 @@ class NNRocket{
     }
     return false;
   }
+  NNRocket clone(){
+    return new NNRocket(dna);
+  }
   void applyForce(PVector force){
     force.limit(forceMag);
     acc.add(force);
