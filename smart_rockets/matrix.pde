@@ -229,7 +229,7 @@ class Matrix {
         if (rand<mutationRate) {//if chosen to be mutated
           //float change= randomGaussian()*NNMC*matrix[i][j];
           //println(change+" , "+matrix[i][j]);
-          matrix[i][j]+=randomGaussian()*NNMC*matrix[i][j];//add a random value to it(can be negative)
+          matrix[i][j]+=randomGaussian()*NNMC*maxValue;//add a random value to it(can be negative)
           ////set the boundaries to minValue and maxValue(optional)
           //if (matrix[i][j]>maxValue) {
           //  matrix[i][j] = maxValue;
